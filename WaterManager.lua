@@ -399,6 +399,7 @@ function WaterManager.trigger_onStayWater( self, trigger, results )
 						corners[6] = shape.worldPosition + shapeRotation * sm.vec3.new( -shapeCornerOffset.x, shapeCornerOffset.y, -shapeCornerOffset.z )
 						corners[7] = shape.worldPosition + shapeRotation * sm.vec3.new( -shapeCornerOffset.x, -shapeCornerOffset.y, shapeCornerOffset.z )
 						corners[8] = shape.worldPosition + shapeRotation * sm.vec3.new( -shapeCornerOffset.x, -shapeCornerOffset.y, -shapeCornerOffset.z )
+--- THEGUY920 CODED HERE						
 						local VelocityNorm = sm.vec3.new(0,0,0)
 						if shape.velocity.x >= 0 then VelocityNorm.x = 1 else VelocityNorm.x = - 1 end
 						if shape.velocity.y >= 0 then VelocityNorm.y = 1 else VelocityNorm.y = - 1 end
@@ -545,6 +546,20 @@ function WaterManager.trigger_onStayWater( self, trigger, results )
 						-- takes the abs of the difference and subtracts a constant
 						-- this is used for multiplying the velocity to get the proper anti velocity
 						local offesets = sm.vec3.new( math.abs(x) - 0.1 , math.abs(y) - 0.1 , math.abs(z) - 0.1 )
+						-- calcualtes water resistance for x, y and z using prevously calcualted variables
+						local VEl = -(offesets * shape.velocity ) * 8
+						VEl.x = math.floor( VEl.x * 100 ) / 100
+						VEl.y = math.floor( VEl.y * 100 ) / 100
+						VEl.z = math.floor( VEl.z * 100 ) / 100
+						-- applies water resistance inpulses
+						if tostring(math.abs(f1_sa_percent_calc)) ~= "nan" then
+							sm.physics.applyImpulse( shape, VEl * f1_sa_percent_calc * sm.vec3.new(1,0,0), false, f1_force_point - shape.worldPosition )
+							sm.physics.applyImpulse( shape, VEl * f2_sa_percent_calc * sm.vec3.new(0,1,0), false, f2_force_point - shape.worldPosition )
+							sm.physics.applyImpulse( shape, VEl * f3_sa_percent_calc * sm.vec3.new(0,0,1), false, f3_force_point - shape.worldPosition )
+						end
+
+--- THEGUY920 CODED TO HERE
+
 						-- Sort so the lowest corners go first
 						table.sort ( corners, function ( c1, c2 ) return c1.z < c2.z end )
 						-- Check which of the lowest corners are under water and calculate their total depth
@@ -573,18 +588,6 @@ function WaterManager.trigger_onStayWater( self, trigger, results )
 							end
 						end
 						avgDepth = totalDepth * 0.25
-						-- calcualtes water resistance for x, y and z using prevously calcualted variables
-						local VEl = -(offesets * shape.velocity ) * 8
-						VEl.x = math.floor( VEl.x * 100 ) / 100
-						VEl.y = math.floor( VEl.y * 100 ) / 100
-						VEl.z = math.floor( VEl.z * 100 ) / 100
-						-- applies water resistance inpulses
-						if tostring(math.abs(f1_sa_percent_calc)) ~= "nan" then
-							sm.physics.applyImpulse( shape, VEl * f1_sa_percent_calc * sm.vec3.new(1,0,0), false, f1_force_point - shape.worldPosition )
-							sm.physics.applyImpulse( shape, VEl * f2_sa_percent_calc * sm.vec3.new(0,1,0), false, f2_force_point - shape.worldPosition )
-							sm.physics.applyImpulse( shape, VEl * f3_sa_percent_calc * sm.vec3.new(0,0,1), false, f3_force_point - shape.worldPosition )
-						end
-
 						-- Approximate how much of the shape is submerged to calculate the displaced volume
 						local bottomArea = 0.5 * ( ( corners[1] - corners[2] ):cross( corners[1] - corners[3] ):length() + ( corners[4] - corners[2] ):cross( corners[4] - corners[3] ):length() )
 						local displacedVolume = math.min( ( bottomArea * avgDepth ), shapeVolume )
