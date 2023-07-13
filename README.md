@@ -5,10 +5,8 @@ Mod to make Scrap Mechanic water better
 Completed:
 
 water resistance added for linear motion
-
+water resistance for rotation
+better buoyancy
 
 Todo:
-
-water resistance needs to be added for rotation
-
-better buoyancy needs to be added
+a lot
